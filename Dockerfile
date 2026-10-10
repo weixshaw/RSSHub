@@ -88,6 +88,8 @@ FROM node:24-trixie-slim AS chromium-downloader
 # Yeah, downloading Chromium never needs those dependencies below.
 
 WORKDIR /app
+# selfhost: download chromium binaries from the npmmirror CDN instead of playwright CDN (slow/unreachable in CN)
+ENV PLAYWRIGHT_DOWNLOAD_HOST=https://cdn.npmmirror.com/binaries/playwright
 COPY --from=dep-version-parser /ver/.patchright_version /app/.patchright_version
 
 ARG TARGETPLATFORM
