@@ -1,4 +1,7 @@
 FROM node:24-trixie AS dep-builder
+# selfhost: npm deps from the npmmirror CDN (env-based; upstream's USE_CHINA_NPM_REGISTRY arg is broken
+# in docker-minifier/chromium-downloader stages where it calls pnpm before corepack enables it)
+ENV npm_config_registry=https://registry.npmmirror.com
 # Here we use the non-slim image to provide build-time deps (compilers and python), thus no need to install later.
 # This effectively speeds up qemu-based cross-build.
 
@@ -47,6 +50,8 @@ RUN \
 # ---------------------------------------------------------------------------------------------------------------------
 
 FROM node:24-trixie-slim AS docker-minifier
+# selfhost: same env-based registry override as dep-builder
+ENV npm_config_registry=https://registry.npmmirror.com
 # The stage is used to further reduce the image size by removing unused files.
 
 WORKDIR /minifier
@@ -90,6 +95,8 @@ FROM node:24-trixie-slim AS chromium-downloader
 WORKDIR /app
 # selfhost: download chromium binaries from the npmmirror CDN instead of playwright CDN (slow/unreachable in CN)
 ENV PLAYWRIGHT_DOWNLOAD_HOST=https://cdn.npmmirror.com/binaries/playwright
+# selfhost: patchright package install via npmmirror too
+ENV npm_config_registry=https://registry.npmmirror.com
 COPY --from=dep-version-parser /ver/.patchright_version /app/.patchright_version
 
 ARG TARGETPLATFORM
