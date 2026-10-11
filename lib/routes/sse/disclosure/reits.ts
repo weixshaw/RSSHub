@@ -35,19 +35,23 @@ export const handler = async (ctx: Context): Promise<Data> => {
 
     const language = 'zh-CN' as Language;
 
-    const items: DataItem[] = response.data.pageHelp.data.map((item): DataItem => ({
-        title: item.title,
-        pubDate: parseDate(item.sseDate),
-        link: new URL(item.url, pdfHost).href,
-        category: [item.securityCode, item.fundExtAbbr || item.fundAbbr, item.bulletinType],
-        guid: `sse-reits-${item.url}`,
-        id: `sse-reits-${item.url}`,
-        updated: parseDate(item.sseDate),
-        enclosure_url: new URL(item.url, pdfHost).href,
-        enclosure_type: 'application/pdf',
-        enclosure_title: item.title,
-        language,
-    }));
+    const items: DataItem[] = response.data.pageHelp.data.map((item): DataItem => {
+        const pdfUrl = new URL(item.url, pdfHost).href;
+        return {
+            title: item.title,
+            description: `<p><strong>${item.fundExtAbbr || item.fundAbbr}</strong>（${item.securityCode}）</p><table><tbody><tr><td>公告类型</td><td>${item.bulletinType}</td></tr><tr><td>公告日期</td><td>${item.sseDate}</td></tr><tr><td>所属年度</td><td>${item.bulletinYear}</td></tr></tbody></table><p>📄 <a href="${pdfUrl}">查看公告原文（PDF）</a></p>`,
+            pubDate: parseDate(item.sseDate),
+            link: pdfUrl,
+            category: [item.securityCode, item.fundExtAbbr || item.fundAbbr, item.bulletinType],
+            guid: `sse-reits-${item.url}`,
+            id: `sse-reits-${item.url}`,
+            updated: parseDate(item.sseDate),
+            enclosure_url: pdfUrl,
+            enclosure_type: 'application/pdf',
+            enclosure_title: item.title,
+            language,
+        };
+    });
 
     return {
         title: '上海证券交易所 - 公募REITs信息披露',

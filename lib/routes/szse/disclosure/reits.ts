@@ -47,9 +47,14 @@ export const handler = async (ctx: Context): Promise<Data> => {
 
         const enclosureUrl: string = new URL(item.attachPath, staticBaseUrl).href;
         const enclosureType = `application/${item.attachFormat.toLowerCase()}`;
+        const detailUrl = new URL(linkUrl, baseUrl).href;
+        const publishDay = item.publishTime?.split(' ')[0];
+
+        const description = `<p><strong>${item.secName}</strong>（${item.secCode}）</p><table><tbody><tr><td>公告日期</td><td>${publishDay ?? ''}</td></tr></tbody></table><p>📄 <a href="${enclosureUrl}">查看公告原文（${item.attachFormat}）</a> · <a href="${detailUrl}">平台详情页</a></p>`;
 
         return {
             ...processedItem,
+            description,
             enclosure_url: enclosureUrl,
             enclosure_type: enclosureType,
             enclosure_title: title,
